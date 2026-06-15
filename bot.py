@@ -67,7 +67,7 @@ async def on_message(message):
         response_text = f"📖 Word: {user_text}\n\n"
         for pos, defs in definitions_dict.items():
             response_text += f"[{pos}]:\n"
-            for i, definition in enumerate(defs[:3], 1): # Limit to 3 per POS
+            for i, definition in enumerate(defs[:], 1): # Limit to 3 per POS
                 response_text += f"{i}. {definition}\n"
             response_text += "\n"
 
