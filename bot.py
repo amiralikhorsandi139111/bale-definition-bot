@@ -30,7 +30,7 @@ bot = Bot(token=BOT_TOKEN)
 async def on_message(message):
 
     if not message.text:
-        await bot.send_message(message.chat.id, "Just send your **English word**, Don't send photo, file, etc")
+        await bot.send_message(message.chat.id, "Just send your *English word*, Don't send photo, file, etc")
         return
 
     if message.from_user.is_bot:
