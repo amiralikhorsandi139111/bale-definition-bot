@@ -29,8 +29,14 @@ bot = Bot(token=BOT_TOKEN)
 
 @bot.event
 async def on_message(message):
+    # Check if message has text content
     if not hasattr(message, "text") or not message.text:
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text="I can only process text messages. Please send me an English word."
+        )
         return
+
     
     chat_id = message.chat.id
     user_text = message.text.strip().lower()
