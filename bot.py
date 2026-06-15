@@ -29,65 +29,140 @@ download_nltk_data()
 
 bot = Bot(token=BOT_TOKEN)
 
+# @bot.event
+# async def on_message(message):
+
+#     try:
+#         # Handle non-text messages
+#         if not message.text:
+#             print(f"Received non-text message from chat_id={message.chat.id}")
+#             await bot.send_message(message.chat.id, "I can only process text messages. Please send me an English word.")
+#             return
+
+#         user_text = message.text.strip().lower()
+#         chat_id = message.chat.id
+#         print(f"Received text: {user_text}")
+
+#         if user_text == "/start":
+#             await bot.send_message(chat_id, "Welcome! Please send me a word to get its definition.")
+#             return
+
+#         # Search WordNet
+#         synsets = wordnet.synsets(user_text)
+#         if not synsets:
+#             await bot.send_message(chat_id, f"Sorry, I couldn't find a definition for '{user_text}'.")
+#             return
+
+#         # Grouping definitions
+#         definitions_dict = {}
+#         pos_map = {"n": "Noun", "v": "Verb", "a": "Adjective", "r": "Adverb", "s": "Adjective Satellite"}
+        
+#         for syn in synsets:
+#             pos = syn.pos()
+#             label = pos_map.get(pos, "Other")
+#             if label not in definitions_dict:
+#                 definitions_dict[label] = []
+#             definitions_dict[label].append(syn.definition())
+
+#         # Build response
+#         response_text = f"📖 Word: {user_text}\n\n"
+#         for pos, defs in definitions_dict.items():
+#             response_text += f"[{pos}]:\n"
+#             for i, definition in enumerate(defs[:], 1): # Limit to 3 per POS
+#                 response_text += f"{i}. {definition}\n"
+#             response_text += "\n"
+
+#         # Safe sending with 400 error protection
+#         final_msg = response_text.strip()
+#         if len(final_msg) > 4000:
+#             final_msg = final_msg[:3990] + "\n\n... (Message truncated)"
+
+#         if final_msg:
+#             try:
+#                 await bot.send_message(chat_id=chat_id, text=final_msg)
+#             except Exception as e:
+#                 print(f"Failed to send message to {chat_id}: {e}")
+                
+#     except Exception as e:
+#         print(f"Unexpected error: {e}")
+#         try:
+#             await bot.send_message(message.chat.id, "An internal error occurred.")
+#         except:
+#             pass
+
+
 @bot.event
 async def on_message(message):
     try:
-        # Handle non-text messages
+        chat_id = message.chat.id
+
+        # Ignore bot's own messages if the library exposes sender info
+        if hasattr(message, "from_user") and hasattr(message.from_user, "is_bot"):
+            if message.from_user.is_bot:
+                return
+
         if not message.text:
-            print(f"Received non-text message from chat_id={message.chat.id}")
-            await bot.send_message(message.chat.id, "I can only process text messages. Please send me an English word.")
+            print(f"Received non-text message from chat_id={chat_id}")
+            await bot.send_message(
+                chat_id,
+                "I can only process text messages. Please send me an English word."
+            )
             return
 
         user_text = message.text.strip().lower()
-        chat_id = message.chat.id
         print(f"Received text: {user_text}")
 
         if user_text == "/start":
-            await bot.send_message(chat_id, "Welcome! Please send me a word to get its definition.")
+            await bot.send_message(
+                chat_id,
+                "Welcome! Please send me a word to get its definition."
+            )
             return
 
-        # Search WordNet
         synsets = wordnet.synsets(user_text)
         if not synsets:
-            await bot.send_message(chat_id, f"Sorry, I couldn't find a definition for '{user_text}'.")
+            await bot.send_message(
+                chat_id,
+                f"Sorry, I couldn't find a definition for '{user_text}'."
+            )
             return
 
-        # Grouping definitions
         definitions_dict = {}
-        pos_map = {"n": "Noun", "v": "Verb", "a": "Adjective", "r": "Adverb", "s": "Adjective Satellite"}
-        
+        pos_map = {
+            "n": "Noun",
+            "v": "Verb",
+            "a": "Adjective",
+            "r": "Adverb",
+            "s": "Adjective Satellite"
+        }
+
         for syn in synsets:
-            pos = syn.pos()
-            label = pos_map.get(pos, "Other")
-            if label not in definitions_dict:
-                definitions_dict[label] = []
-            definitions_dict[label].append(syn.definition())
+            pos = pos_map.get(syn.pos(), "Other")
+            definitions_dict.setdefault(pos, [])
+            definitions_dict[pos].append(syn.definition())
 
-        # Build response
-        response_text = f"📖 Word: {user_text}\n\n"
+        lines = [f"📖 Word: {user_text}", ""]
         for pos, defs in definitions_dict.items():
-            response_text += f"[{pos}]:\n"
-            for i, definition in enumerate(defs[:], 1): # Limit to 3 per POS
-                response_text += f"{i}. {definition}\n"
-            response_text += "\n"
+            lines.append(f"{pos}:")
+            for i, definition in enumerate(defs[:3], 1):
+                lines.append(f"{i}. {definition}")
+            lines.append("")
 
-        # Safe sending with 400 error protection
-        final_msg = response_text.strip()
-        if len(final_msg) > 4000:
-            final_msg = final_msg[:3990] + "\n\n... (Message truncated)"
+        response_text = "\n".join(lines).strip()
 
-        if final_msg:
-            try:
-                await bot.send_message(chat_id=chat_id, text=final_msg)
-            except Exception as e:
-                print(f"Failed to send message to {chat_id}: {e}")
-                
+        if len(response_text) > 4000:
+            response_text = response_text[:3990].rstrip() + "\n\n... (Message truncated)"
+
+        await bot.send_message(chat_id, response_text)
+
     except Exception as e:
         print(f"Unexpected error: {e}")
         try:
             await bot.send_message(message.chat.id, "An internal error occurred.")
         except:
             pass
+
+
 
 if __name__ == "__main__":
     print("Bot is starting...")
