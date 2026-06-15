@@ -79,14 +79,14 @@ async def on_message(message):
     response_text = f"📖 Word: {user_text}\n\n"
     definitions_found = False
     pos_map = {'n': 'Noun', 'v': 'Verb', 'a': 'Adjective', 'r': 'Adverb', 's': 'Synonym'}
-    
+
     for pos, def_list in definitions_dict.items():
         if def_list:
             definitions_found = True
             display_pos = pos_map.get(pos, pos.upper())
             
             response_text += f"{display_pos}:\n"
-            for i, definition in enumerate(def_list[:3]):
+            for i, definition in enumerate(def_list[:]):
                 response_text += f"{i+1}. {definition}\n"
             response_text += "\n"
     
