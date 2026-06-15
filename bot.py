@@ -144,7 +144,7 @@ async def on_message(message):
         lines = [f"📖 Word: {user_text}", ""]
         for pos, defs in definitions_dict.items():
             lines.append(f"{pos}:")
-            for i, definition in enumerate(defs[:3], 1):
+            for i, definition in enumerate(defs[:], 1):
                 lines.append(f"{i}. {definition}")
             lines.append("")
 
