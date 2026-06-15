@@ -78,7 +78,7 @@ async def on_message(message):
 
     response_text = f"📖 Word: {user_text}\n\n"
     definitions_found = False
-    pos_map = {'n': 'Noun', 'v': 'Verb', 'a': 'Adjective', 'r': 'Adverb'}
+    pos_map = {'n': 'Noun', 'v': 'Verb', 'a': 'Adjective', 'r': 'Adverb', 's': 'Synonyms'}
     
     for pos, def_list in definitions_dict.items():
         if def_list:
