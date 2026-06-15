@@ -124,7 +124,7 @@ async def on_message(message):
     await bot.send_message(
         chat_id, 
         response_text, 
-        parse_mode="Markdown"
+
     )
 
 if __name__ == '__main__':
