@@ -1,25 +1,63 @@
+# import os
+# import nltk
+# from nltk.corpus import wordnet
+# from bale import Bot, Update
+
+# # Configuration
+# BOT_TOKEN = "YOUR_BALE_BOT_TOKEN_HERE"
+# bot = Bot(token=BOT_TOKEN)
+
+# # Setup NLTK data path
+# nltk.data.path.append(os.path.join(os.getcwd(), 'nltk_data'))
+# import os
+# import nltk
+# from nltk.corpus import wordnet
+# from dotenv import load_dotenv
+# from bale import Bot, Update
+
+# load_dotenv()
+# BOT_TOKEN = os.getenv("BOT_TOKEN")
+# if not BOT_TOKEN:
+#     raise ValueError("BOT_TOKEN not found in .env file"))
+
+
+# def download_nltk_data():
+#     try:
+#         nltk.data.find('corpora/wordnet')
+#         print("WordNet corpus already downloaded.")
+#     except LookupError:
+#         print("WordNet corpus not found. Downloading...")
+#         nltk.download('wordnet', quiet=True)
+#         print("WordNet corpus downloaded successfully.")
+
+# download_nltk_data()
 import os
 import nltk
 from nltk.corpus import wordnet
-from bale import Bot, Update
+from dotenv import load_dotenv
+from bale import Bot
 
-# Configuration
-BOT_TOKEN = "YOUR_BALE_BOT_TOKEN_HERE"
-bot = Bot(token=BOT_TOKEN)
+load_dotenv()
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+if not BOT_TOKEN:
+    raise ValueError("BOT_TOKEN not found in .env file")
 
-# Setup NLTK data path
+
 nltk.data.path.append(os.path.join(os.getcwd(), 'nltk_data'))
 
 def download_nltk_data():
     try:
         nltk.data.find('corpora/wordnet')
-        print("WordNet corpus already downloaded.")
+        print("✅ WordNet already downloaded.")
     except LookupError:
-        print("WordNet corpus not found. Downloading...")
+        print("📥 Downloading WordNet...")
         nltk.download('wordnet', quiet=True)
-        print("WordNet corpus downloaded successfully.")
+        print("✅ WordNet downloaded.")
 
 download_nltk_data()
+
+
+bot = Bot(token=BOT_TOKEN)
 
 @bot.event
 async def on_message(message):
