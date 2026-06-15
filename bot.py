@@ -83,7 +83,7 @@ async def on_message(message):
     for pos, def_list in definitions_dict.items():
         if def_list:
             definitions_found = True
-            display_pos = pos_map.get(pos, pos.upper()).replace(" ", "")
+            display_pos = pos_map.get(pos, pos.upper())
             
             response_text += f"{display_pos}:\n"
             for i, definition in enumerate(def_list[:]):
