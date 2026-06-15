@@ -76,50 +76,21 @@ async def on_message(message):
             definitions_dict[pos].append(definition)
     
 
-    # response_text = f"📖 Word: {user_text}\n\n"
-    # definitions_found = False
-    # pos_map = {'n': 'Noun', 'v': 'Verb', 'a': 'Adjective', 'r': 'Adverb', 's': 'Synonyms'}
-    
-    # for pos, def_list in definitions_dict.items():
-    #     if def_list:
-    #         definitions_found = True
-    #         display_pos = pos_map.get(pos, pos.upper())
-            
-    #         response_text += f"{display_pos}:\n"
-    #         for i, definition in enumerate(def_list[:3]):
-    #             response_text += f"{i+1}. {definition}\n"
-    #         response_text += "\n"
-    
-    # if not definitions_found:
-    #     await bot.send_message(
-    #         chat_id=chat_id,
-    #         text=f"Sorry, I couldn't find any definitions for '{user_text}'."
-    #     )
-    # else:
-    #     await bot.send_message(
-    #         chat_id=chat_id,
-    #         text=response_text
-    #     )
-    # ... (کدهای قبلی تا قبل از بخش ساخت response_text)
-
     response_text = f"📖 Word: {user_text}\n\n"
-    parts = [] # لیستی برای ذخیره هر بخش (Noun, Verb و...)
-
+    definitions_found = False
     pos_map = {'n': 'Noun', 'v': 'Verb', 'a': 'Adjective', 'r': 'Adverb', 's': 'Synonyms'}
-
+    
     for pos, def_list in definitions_dict.items():
         if def_list:
+            definitions_found = True
             display_pos = pos_map.get(pos, pos.upper())
-
-            # ساختن رشته مربوط به این بخش خاص
-            section = f"{display_pos}:\n"
-            section += "\n".join([f"{i+1}. {definition}" for i, definition in enumerate(def_list[:3])])
-            parts.append(section).replace(" ", "")
-
-    # چسباندن تمام بخش‌ها با دو خط فاصله بین هر کدام
-    response_text += "\n\n".join(parts)
-
-    if not parts: # بررسی اینکه آیا چیزی پیدا شد یا خیر
+            
+            response_text += f"{display_pos}:\n"
+            for i, definition in enumerate(def_list[:3]):
+                response_text += f"{i+1}. {definition}\n"
+            response_text += "\n"
+    
+    if not definitions_found:
         await bot.send_message(
             chat_id=chat_id,
             text=f"Sorry, I couldn't find any definitions for '{user_text}'."
@@ -129,6 +100,8 @@ async def on_message(message):
             chat_id=chat_id,
             text=response_text
         )
+
+
 
 
 if __name__ == "__main__":
