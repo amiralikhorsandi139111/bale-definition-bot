@@ -116,23 +116,25 @@ from nltk.corpus import wordnet
 from dotenv import load_dotenv
 from bale import Bot
 
-# تنظیمات اولیه
+# Load environment variables
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 if not BOT_TOKEN:
     raise ValueError("❌ BOT_TOKEN not found in .env file")
 
-# تنظیم مسیر داده‌های NLTK
-nltk_path = os.path.join(os.getcwd(), 'nltk_data')
-if not os.path.exists(nltk_path):
-    os.makedirs(nltk_path)
+# Setup NLTK data path
+nltk_path = os.path.join(os.getcwd(), "nltk_data")
+os.makedirs(nltk_path, exist_ok=True)
 nltk.data.path.append(nltk_path)
 
 def setup_nltk():
+    """Downloads WordNet data if not already present."""
     try:
         nltk.data.find('corpora/wordnet')
+        print("✅ WordNet already downloaded.")
     except LookupError:
         print("📥 Downloading WordNet...")
+        # Ensure quiet=True for cleaner output during download
         nltk.download('wordnet', download_dir=nltk_path, quiet=True)
         print("✅ WordNet downloaded.")
 
@@ -142,45 +144,75 @@ bot = Bot(token=BOT_TOKEN)
 
 @bot.event
 async def on_message(message):
+    """Handles incoming messages from users."""
+    # Ignore messages without text content or empty messages
     if not hasattr(message, "text") or not message.text:
         return
 
     chat_id = message.chat.id
     user_text = message.text.strip().lower()
 
+    # Handle the /start command
     if user_text == "/start":
-        await bot.send_message(chat_id, "سلام! کلمه‌ای انگلیسی بفرست تا تعریفش رو برات پیدا کنم.")
+        await bot.send_message(
+            chat_id=chat_id,
+            text="Welcome! Please send me an English word to get its definitions."
+        )
         return
 
-    # جستجوی کلمه
-    synsets = wordnet.synsets(user_text)
-    
+    # Fetch synsets from WordNet
+    try:
+        synsets = wordnet.synsets(user_text)
+    except Exception as e:
+        print(f"Error during synset lookup for '{user_text}': {e}")
+        await bot.send_message(chat_id=chat_id, text="An internal error occurred while processing your request.")
+        return
+
+    # If no synsets are found, inform the user
     if not synsets:
-        await bot.send_message(chat_id, f"متأسفم، تعریفی برای کلمه '{user_text}' پیدا نشد.")
+        await bot.send_message(
+            chat_id=chat_id,
+            text=f"Sorry, I couldn't find any definitions for the word '{user_text}'."
+        )
         return
 
-    # گروه‌بندی و حذف تکراری‌ها
+    # Process definitions and group them by part of speech
     definitions_dict = {}
-    pos_map = {'n': 'اسم (Noun)', 'v': 'فعل (Verb)', 'a': 'صفت (Adjective)', 'r': 'قید (Adverb)', 's': 'صفت (Adjective Satellite)'}
-    
+    # Mapping for displaying parts of speech in a user-friendly way
+    pos_map = {
+        'n': 'Noun',
+        'v': 'Verb',
+        'a': 'Adjective',
+        'r': 'Adverb',
+        's': 'Adjective Satellite'
+    }
+
     for syn in synsets:
         pos = syn.pos()
         definition = syn.definition()
         if pos not in definitions_dict:
-            definitions_dict[pos] = set() # استفاده از set برای حذف تکرار
-        definitions_dict[pos].add(definition)
+            definitions_dict[pos] = []
+        # Add definition only if it's not already listed for this part of speech
+        if definition not in definitions_dict[pos]:
+            definitions_dict[pos].append(definition)
 
-    # ساخت پیام خروجی
-    response = f"📖 **کلمه:** `{user_text}`\n\n"
-    for pos, defs in definitions_dict.items():
-        label = pos_map.get(pos, pos.upper())
-        response += f"🔹 *{label}:*\n"
-        for i, definition in enumerate(list(defs)[:3], 1): # حداکثر 3 تعریف برای هر نوع
-            response += f"{i}. {definition}\n"
-        response += "\n"
+    # Construct the response message
+    response_text = f"📖 Word: `{user_text}`\n\n"
 
-    await bot.send_message(chat_id, response, parse_mode="Markdown")
+    # Iterate through collected definitions and format the output
+    for pos, def_list in definitions_dict.items():
+        display_pos = pos_map.get(pos, pos.upper()) # Use mapped name or uppercase if not found
+        response_text += f"🔹 *{display_pos}:*\n"
+        for i, definition in enumerate(def_list, 1):
+            response_text += f"{i}. {definition}\n"
+        response_text += "\n"
+
+    # Send the final response to the user
+    await bot.send_message(chat_id=chat_id, text=response_text, parse_mode="Markdown")
 
 if __name__ == "__main__":
-    print("🤖 Bot is running...")
+    print("=" * 40)
+    print("🤖 Bot is starting...")
+    print("Send /start then type any English word.")
+    print("=" * 40)
     bot.run()
