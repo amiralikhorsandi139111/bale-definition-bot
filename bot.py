@@ -114,7 +114,7 @@ async def on_message(message):
             # ساختن رشته مربوط به این بخش خاص
             section = f"{display_pos}:\n"
             section += "\n".join([f"{i+1}. {definition}" for i, definition in enumerate(def_list[:3])])
-            parts.append(section)
+            parts.append(section).replace(" ", "")
 
     # چسباندن تمام بخش‌ها با دو خط فاصله بین هر کدام
     response_text += "\n\n".join(parts)
